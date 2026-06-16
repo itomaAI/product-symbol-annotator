@@ -30,7 +30,16 @@ window.SymbolAnnotator = window.SymbolAnnotator || {};
     }
 
     start() {
+      this.detectOS();
       console.log("Symbol Annotator started.");
+    }
+
+    detectOS() {
+      const isMac = navigator.userAgent.includes("Mac") || navigator.platform.includes("Mac");
+      const ctrlKeyEl = document.getElementById("hint-ctrl-key");
+      if (isMac && ctrlKeyEl) {
+        ctrlKeyEl.textContent = "⌘ Cmd";
+      }
     }
   }
 
