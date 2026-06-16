@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Symbol Annotator</title>
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+</head>
+<body>
+  <div id="app-shell">
+    <header class="topbar">
+      <div class="brand-group">
+        <div class="brand-mark">SA</div>
+        <div>
+          <div class="brand-title">Symbol Annotator</div>
+          <div class="brand-subtitle">PDF drawing annotation workspace</div>
+        </div>
+      </div>
+
+      <div class="toolbar-center">
+        <label class="field-inline">
+          <span>Render</span>
+          <input id="render-scale-input" type="number" value="3.0" step="0.5" min="1.0" max="10.0" />
+        </label>
+        <div class="toolbar-hint">
+          <span><kbd>Shift</kbd>+Drag 範囲選択</span>
+          <span><kbd>Ctrl</kbd>+Click 複数選択</span>
+          <span><kbd>Space</kbd>+Drag Pan</span>
+          <span><kbd>Wheel</kbd> Zoom</span>
+        </div>
+      </div>
+
+      <div class="toolbar-actions">
+        <label class="btn primary file-btn">
+          <input id="pdf-input" type="file" accept=".pdf,application/pdf" />
+          <span>Open PDF</span>
+        </label>
+        <label class="btn file-btn">
+          <input id="project-input" type="file" accept=".saproj,application/zip,.zip" />
+          <span>Load</span>
+        </label>
+        <button id="save-project-btn" class="btn">Save</button>
+        <button id="export-dataset-btn" class="btn success">Export</button>
+      </div>
+    </header>
+
+    <section class="statusbar">
+      <div id="project-status" class="status-item strong">No PDF loaded</div>
+      <div id="mode-status" class="status-item">Mode: Idle</div>
+      <div id="selection-status" class="status-item">Selection: none</div>
+      <div id="stats-status" class="status-item right">Annotations: 0 / Legends: 0</div>
+    </section>
+
+    <main class="main-grid">
+      <aside class="sidebar">
+        <section class="panel sidebar-header-panel">
+          <div>
+            <h2>Classes</h2>
+          </div>
+          <button id="class-modal-open-btn" class="icon-btn" title="カタログを編集">⚙</button>
+        </section>
+
+        <section class="panel class-panel">
+          <ul id="class-list" class="class-list"></ul>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <div id="empty-state" class="empty-state">
+          <div class="empty-card">
+            <div class="empty-icon">▧</div>
+            <h1>PDFを開いて開始</h1>
+            <p>図面PDFを読み込み、シンボル種別を選んでBBoxを作成します。</p>
+            <label class="btn primary file-btn large">
+              <input id="empty-pdf-input" type="file" accept=".pdf,application/pdf" />
+              <span>Open PDF</span>
+            </label>
+          </div>
+        </div>
+
+        <div id="viewport" class="viewport">
+          <div id="canvas-stack" class="canvas-stack">
+            <canvas id="pdf-canvas"></canvas>
+          </div>
+          <canvas id="annotation-canvas" class="overlay-canvas"></canvas>
+          <canvas id="interaction-canvas" class="overlay-canvas"></canvas>
+        </div>
+
+        <footer id="pagebar" class="pagebar hidden">
+          <button id="prev-page-btn" class="btn compact">← Prev</button>
+          <span class="page-label">Page</span>
+          <input id="page-input" type="number" value="1" min="1" />
+          <span>/ <span id="page-total">?</span></span>
+          <button id="next-page-btn" class="btn compact">Next →</button>
+          <button id="fit-view-btn" class="btn compact ghost">Fit</button>
+          <button id="actual-size-btn" class="btn compact ghost">100%</button>
+        </footer>
+      </section>
+    </main>
+  </div>
+
+  <div id="catalog-modal" class="modal-overlay catalog-editor-overlay hidden" aria-hidden="true">
+    <div class="modal-card large-modal catalog-modal-card" id="catalog-modal-card">
+      <div class="modal-header">
+        <div>
+          <h2>カタログ エディタ</h2>
+          <p>この図面で使用するシンボルクラスと製品を定義します。</p>
+        </div>
+        <button id="catalog-modal-close-btn" class="icon-btn">×</button>
+      </div>
+      <div class="modal-tools">
+        <button id="add-class-btn" class="btn compact">+ シンボルクラスを追加</button>
+      </div>
+      <div id="catalog-editor-list" class="catalog-editor-list"></div>
+      <div class="modal-actions">
+        <button id="catalog-modal-cancel-btn" class="btn">Cancel</button>
+        <button id="catalog-modal-apply-btn" class="btn primary">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-root" class="toast-root"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+  <script src="js/config/config.js"></script>
+  <script src="js/core/EventEmitter.js"></script>
+  <script src="js/core/HistoryStack.js"></script>
+  <script src="js/core/Store.js"></script>
+  <script src="js/utils/Geometry.js"></script>
+  <script src="js/services/PdfService.js"></script>
+  <script src="js/services/ExportService.js"></script>
+  <script src="js/ui/Toast.js"></script>
+  <script src="js/ui/StatusBar.js"></script>
+  <script src="js/ui/ClassSidebar.js"></script>
+  <script src="js/ui/CatalogEditor.js"></script>
+  <script src="js/ui/BatchEditor.js"></script>
+  <script src="js/ui/CanvasWorkspace.js"></script>
+  <script src="js/ui/Toolbar.js"></script>
+  <script src="js/App.js"></script>
+
+  <!-- 一括編集モーダル -->
+  <div id="batch-edit-modal" class="modal-overlay hidden" aria-hidden="true" style="z-index: 200;">
+    <div class="modal-card" style="width: 400px; max-height: 80vh;">
+      <div class="modal-header">
+        <div>
+          <h2>ラベルの一括編集</h2>
+          <p id="batch-edit-count-desc">選択された N 個のアノテーション</p>
+        </div>
+        <button id="batch-edit-close-btn" class="icon-btn">×</button>
+      </div>
+      <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+        <label style="display: flex; flex-direction: column; gap: 6px;">
+          <span style="font-size: 0.85rem; color: var(--text-1);">シンボルクラス (親)</span>
+          <select id="batch-edit-class-select" style="padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-1); color: var(--text-0); border-radius: 4px;">
+            <option value="">-- 選択 --</option>
+          </select>
+        </label>
+        <label style="display: flex; flex-direction: column; gap: 6px;">
+          <span style="font-size: 0.85rem; color: var(--text-1);">製品 (子)</span>
+          <select id="batch-edit-product-select" style="padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-1); color: var(--text-0); border-radius: 4px;">
+            <option value="">-- (なし) --</option>
+          </select>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button id="batch-edit-cancel-btn" class="btn">Cancel</button>
+        <button id="batch-edit-apply-btn" class="btn primary">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 画像プレビューモーダル -->
+  <div id="image-preview-modal" class="modal-overlay hidden" aria-hidden="true" style="z-index: 150;">
+    <div class="image-preview-card" style="position: relative; max-width: 90vw; max-height: 90vh; display: grid; place-items: center;">
+      <img id="image-preview-img" src="" alt="Preview" style="max-width: 100%; max-height: 90vh; background: white; border-radius: 4px; box-shadow: 0 4px 24px rgba(0,0,0,0.5);">
+      <button id="image-preview-close-btn" class="icon-btn" style="position: absolute; top: -15px; right: -15px; border-radius: 50%; width: 30px; height: 30px; line-height: 1; padding: 0; background: #222; color: #fff; border: 2px solid #555;">×</button>
+    </div>
+  </div>
+</body>
+</html>

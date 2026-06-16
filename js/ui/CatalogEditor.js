@@ -1,0 +1,222 @@
+window.SymbolAnnotator = window.SymbolAnnotator || {};
+
+(function(NS) {
+  function generateId(prefix) {
+    return `${prefix}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+  }
+
+  function deepClone(val) {
+    return JSON.parse(JSON.stringify(val));
+  }
+
+  class CatalogEditor {
+    constructor({ store }) {
+      this.store = store;
+      this.modalEl = document.getElementById("catalog-modal");
+      this.listEl = document.getElementById("catalog-editor-list");
+      this.cardEl = document.getElementById("catalog-modal-card");
+      this.headerEl = this.cardEl.querySelector(".modal-header");
+      this.draftCatalog = [];
+
+      this.initDraggable();
+
+      document.getElementById("catalog-modal-close-btn").addEventListener("click", () => this.close());
+      document.getElementById("catalog-modal-cancel-btn").addEventListener("click", () => this.close());
+      document.getElementById("catalog-modal-apply-btn").addEventListener("click", () => this.apply());
+      
+      document.getElementById("add-class-btn").addEventListener("click", () => this.addClass());
+
+      // サイドバーの歯車ボタン（idはそのまま）から呼ばれる
+      const openBtn = document.getElementById("class-modal-open-btn");
+      if (openBtn) {
+        openBtn.addEventListener("click", () => this.open());
+      }
+    }
+
+    open() {
+      this.draftCatalog = deepClone(this.store.getState().catalog);
+      this.render();
+      this.modalEl.classList.remove("hidden");
+      this.modalEl.setAttribute("aria-hidden", "false");
+    }
+
+    initDraggable() {
+      let isDragging = false;
+      let startX = 0;
+      let startY = 0;
+      let startLeft = 0;
+      let startTop = 0;
+
+      const onMouseDown = (e) => {
+        if (e.target.closest("button") || e.target.tagName === "INPUT") return;
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        
+        // 最初のドラッグ時に translate(-50%, -50%) を外して left/top を固定する
+        if (!this.cardEl.classList.contains("is-dragged")) {
+          const rect = this.cardEl.getBoundingClientRect();
+          this.cardEl.classList.add("is-dragged");
+          this.cardEl.style.left = rect.left + "px";
+          this.cardEl.style.top = rect.top + "px";
+        }
+        
+        startLeft = parseFloat(this.cardEl.style.left) || 0;
+        startTop = parseFloat(this.cardEl.style.top) || 0;
+        
+        document.addEventListener("mousemove", onMouseMove);
+        document.addEventListener("mouseup", onMouseUp);
+      };
+
+      const onMouseMove = (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        this.cardEl.style.left = (startLeft + dx) + "px";
+        this.cardEl.style.top = (startTop + dy) + "px";
+      };
+
+      const onMouseUp = () => {
+        isDragging = false;
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+      };
+
+      this.headerEl.addEventListener("mousedown", onMouseDown);
+    }
+
+    close() {
+      this.modalEl.classList.add("hidden");
+      this.modalEl.setAttribute("aria-hidden", "true");
+    }
+
+    apply() {
+      this.store.setCatalog(this.draftCatalog);
+      this.close();
+    }
+
+    addClass() {
+      this.draftCatalog.push({
+        id: generateId("cls"),
+        type: "class",
+        name: "新規クラス",
+        description: "",
+        color: "rgba(33, 150, 243, 0.24)",
+        borderColor: "#2196f3",
+        legendImage: null,
+        products: []
+      });
+      this.render();
+    }
+
+    addProduct(classIndex) {
+      this.draftCatalog[classIndex].products.push({
+        id: generateId("prod"),
+        type: "product",
+        name: "新規製品",
+        description: "",
+        appearanceImage: null
+      });
+      this.render();
+    }
+
+    removeClass(index) {
+      if(confirm("このクラスと配下の製品を削除しますか？")) {
+        this.draftCatalog.splice(index, 1);
+        this.render();
+      }
+    }
+
+    removeProduct(classIndex, productIndex) {
+      this.draftCatalog[classIndex].products.splice(productIndex, 1);
+      this.render();
+    }
+
+    render() {
+      this.listEl.innerHTML = "";
+
+      if (this.draftCatalog.length === 0) {
+        this.listEl.innerHTML = `<div class="empty-state"><p>クラスがありません。「+ シンボルクラスを追加」から追加してください。</p></div>`;
+        return;
+      }
+
+      this.draftCatalog.forEach((cls, cIdx) => {
+        const clsEl = document.createElement("div");
+        clsEl.className = "editor-class-block";
+        clsEl.innerHTML = `
+          <div class="editor-row class-row">
+            <input type="color" class="color-picker" value="${cls.borderColor}" data-cidx="${cIdx}">
+            <div class="editor-inputs">
+              <input type="text" class="name-input" placeholder="クラス名 (例: 感知器)" value="${cls.name}" data-cidx="${cIdx}" data-field="name">
+              <input type="text" class="desc-input" placeholder="仕様・備考" value="${cls.description}" data-cidx="${cIdx}" data-field="description">
+            </div>
+            <button class="btn compact ghost add-prod-btn" data-cidx="${cIdx}">+ 製品追加</button>
+            <button class="icon-btn delete-btn" data-cidx="${cIdx}" title="削除">🗑️</button>
+          </div>
+          <div class="editor-products-list"></div>
+        `;
+
+        const prodListEl = clsEl.querySelector(".editor-products-list");
+        cls.products.forEach((prod, pIdx) => {
+          const prodEl = document.createElement("div");
+          prodEl.className = "editor-row product-row";
+          prodEl.innerHTML = `
+            <div class="tree-line">└</div>
+            <div class="editor-inputs">
+              <input type="text" class="name-input" placeholder="製品名・型番" value="${prod.name}" data-cidx="${cIdx}" data-pidx="${pIdx}" data-field="name">
+              <input type="text" class="desc-input" placeholder="仕様・備考" value="${prod.description}" data-cidx="${cIdx}" data-pidx="${pIdx}" data-field="description">
+            </div>
+            <button class="icon-btn delete-btn" data-cidx="${cIdx}" data-pidx="${pIdx}" title="削除">🗑️</button>
+          `;
+          prodListEl.appendChild(prodEl);
+        });
+
+        this.listEl.appendChild(clsEl);
+      });
+
+      // Event Listeners (Delegation)
+      this.listEl.querySelectorAll("input[type='text']").forEach(input => {
+        input.addEventListener("input", (e) => {
+          const cIdx = e.target.dataset.cidx;
+          const pIdx = e.target.dataset.pidx;
+          const field = e.target.dataset.field;
+          if (pIdx !== undefined) {
+            this.draftCatalog[cIdx].products[pIdx][field] = e.target.value;
+          } else {
+            this.draftCatalog[cIdx][field] = e.target.value;
+          }
+        });
+      });
+
+      this.listEl.querySelectorAll(".color-picker").forEach(input => {
+        input.addEventListener("input", (e) => {
+          const cIdx = e.target.dataset.cidx;
+          const color = e.target.value;
+          this.draftCatalog[cIdx].borderColor = color;
+          // color (fill) は少し透明度を持たせる (簡易実装)
+          // 実際にはhex to rgba が必要だがここでは簡易的に同じ色にするか固定
+        });
+      });
+
+      this.listEl.querySelectorAll(".add-prod-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          this.addProduct(e.target.dataset.cidx);
+        });
+      });
+
+      this.listEl.querySelectorAll(".delete-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const cIdx = e.currentTarget.dataset.cidx;
+          const pIdx = e.currentTarget.dataset.pidx;
+          if (pIdx !== undefined) {
+            this.removeProduct(cIdx, pIdx);
+          } else {
+            this.removeClass(cIdx);
+          }
+        });
+      });
+    }
+  }
+
+  NS.CatalogEditor = CatalogEditor;
+})(window.SymbolAnnotator);
