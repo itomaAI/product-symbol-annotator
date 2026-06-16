@@ -150,6 +150,9 @@ window.SymbolAnnotator = window.SymbolAnnotator || {};
               <input type="text" class="name-input" placeholder="クラス名 (例: 感知器)" value="${cls.name}" data-cidx="${cIdx}" data-field="name">
               <input type="text" class="desc-input" placeholder="仕様・備考" value="${cls.description}" data-cidx="${cIdx}" data-field="description">
             </div>
+            <div class="legend-thumb catalog-editor-thumb ${cls.legendImage ? "has-legend" : ""}">
+              ${cls.legendImage ? `<img src="${cls.legendImage}" alt="legend"><button class="legend-delete-btn" data-cidx="${cIdx}" data-type="legend" type="button" title="凡例を削除">×</button>` : `<span class="legend-placeholder" title="図面からの切り抜きはサイドバーで行ってください">▧</span>`}
+            </div>
             <button class="btn compact ghost add-prod-btn" data-cidx="${cIdx}">+ 製品追加</button>
             <button class="icon-btn delete-btn" data-cidx="${cIdx}" title="削除">🗑️</button>
           </div>
@@ -165,6 +168,9 @@ window.SymbolAnnotator = window.SymbolAnnotator || {};
             <div class="editor-inputs">
               <input type="text" class="name-input" placeholder="製品名・型番" value="${prod.name}" data-cidx="${cIdx}" data-pidx="${pIdx}" data-field="name">
               <input type="text" class="desc-input" placeholder="仕様・備考" value="${prod.description}" data-cidx="${cIdx}" data-pidx="${pIdx}" data-field="description">
+            </div>
+            <div class="legend-thumb catalog-editor-thumb ${prod.appearanceImage ? "has-legend" : ""}">
+              ${prod.appearanceImage ? `<img src="${prod.appearanceImage}" alt="appearance"><button class="legend-delete-btn" data-cidx="${cIdx}" data-pidx="${pIdx}" data-type="appearance" type="button" title="姿図を削除">×</button>` : `<span class="legend-placeholder" title="図面からの切り抜きはサイドバーで行ってください">🖼️</span>`}
             </div>
             <button class="icon-btn delete-btn" data-cidx="${cIdx}" data-pidx="${pIdx}" title="削除">🗑️</button>
           `;
@@ -213,6 +219,21 @@ window.SymbolAnnotator = window.SymbolAnnotator || {};
           } else {
             this.removeClass(cIdx);
           }
+        });
+      });
+
+      this.listEl.querySelectorAll(".legend-delete-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const cIdx = e.currentTarget.dataset.cidx;
+          const pIdx = e.currentTarget.dataset.pidx;
+          const type = e.currentTarget.dataset.type;
+          
+          if (type === "legend") {
+            this.draftCatalog[cIdx].legendImage = null;
+          } else if (type === "appearance") {
+            this.draftCatalog[cIdx].products[pIdx].appearanceImage = null;
+          }
+          this.render();
         });
       });
     }

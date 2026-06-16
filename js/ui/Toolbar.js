@@ -153,7 +153,7 @@ window.SymbolAnnotator = window.SymbolAnnotator || {};
       const isInput = target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
 
       if ((event.key === "Delete" || event.key === "Backspace") && !isInput) {
-        const removed = this.store.removeSelectedAnnotation();
+        const removed = this.store.removeSelectedAnnotations();
         if (removed) {
           event.preventDefault();
         }
@@ -161,9 +161,9 @@ window.SymbolAnnotator = window.SymbolAnnotator || {};
       }
 
       if (event.key === "Escape") {
-        this.store.selectClass(null);
-        this.store.setPendingLegendClass(null);
-        this.store.selectAnnotation(null);
+        this.store.selectNode(null);
+        this.store.setPendingImageTarget(null);
+        this.store.selectAnnotations([]);
         event.preventDefault();
         return;
       }
