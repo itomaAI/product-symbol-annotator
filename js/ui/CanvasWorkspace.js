@@ -529,13 +529,14 @@ window.SymbolAnnotator = window.SymbolAnnotator || {};
 
     findResizeHandle(x, y) {
       const state = this.store.getState();
-      if (!state.selectedAnnotationId) return null;
-      const selected = this.getAnnotationById(state.selectedAnnotationId);
+      if (!state.selectedAnnotationIds || state.selectedAnnotationIds.length !== 1) return null;
+      const targetId = state.selectedAnnotationIds[0];
+      const selected = this.getAnnotationById(targetId);
       if (!selected) return null;
       const handles = this.getHandles(selected.bbox);
       for (const [name, rect] of Object.entries(handles)) {
         if (NS.Geometry.pointInRect(x, y, rect)) {
-          return name;
+          return { handle: name, annotationId: targetId };
         }
       }
       return null;

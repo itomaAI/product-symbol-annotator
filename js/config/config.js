@@ -17,8 +17,10 @@ window.SymbolAnnotator = window.SymbolAnnotator || {};
       {
         id: "cls_default_1",
         type: "class",
-        name: "感知器",
-        description: "天井付・一般",
+        name: "LED埋込天井灯",
+        description: "ベースライト",
+        planestCategoryId: "220",
+        planestItemId: "010",
         color: "rgba(255, 82, 82, 0.24)",
         borderColor: "#ff5252",
         legendImage: null,
@@ -27,7 +29,7 @@ window.SymbolAnnotator = window.SymbolAnnotator || {};
             id: "prod_default_1",
             type: "product",
             name: "製品A",
-            description: "熱感知器",
+            description: "型番・仕様など",
             appearanceImage: null
           }
         ]

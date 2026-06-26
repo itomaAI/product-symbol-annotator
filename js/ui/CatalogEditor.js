@@ -140,15 +140,51 @@ window.SymbolAnnotator = window.SymbolAnnotator || {};
         return;
       }
 
+      const planestData = NS.PlanestData || [];
+      
       this.draftCatalog.forEach((cls, cIdx) => {
         const clsEl = document.createElement("div");
         clsEl.className = "editor-class-block";
+        
+        // カテゴリの選択肢生成
+        let catOptions = `<option value="">-- カテゴリ未選択 --</option>`;
+        planestData.forEach(cat => {
+          const selected = (cls.planestCategoryId === cat.category_code) ? "selected" : "";
+          catOptions += `<option value="${cat.category_code}" ${selected}>${cat.category_code} : ${cat.category_name}</option>`;
+        });
+
+        // アイテムの選択肢生成
+        let itemOptions = `<option value="">-- アイテム未選択 --</option>`;
+        let targetItems = [];
+        if (cls.planestCategoryId) {
+          const targetCat = planestData.find(c => c.category_code === cls.planestCategoryId);
+          if (targetCat) targetItems = targetCat.sub_items.map(item => ({ ...item, catCode: targetCat.category_code }));
+        } else {
+          // 未選択時は全アイテムをフラットに表示
+          planestData.forEach(cat => {
+            targetItems = targetItems.concat(cat.sub_items.map(item => ({ ...item, catCode: cat.category_code })));
+          });
+        }
+        
+        targetItems.forEach(item => {
+          const isSelected = (cls.planestItemId === item.code && (cls.planestCategoryId === item.catCode || !cls.planestCategoryId));
+          itemOptions += `<option value="${item.code}" data-cat="${item.catCode}" ${isSelected ? "selected" : ""}>${item.catCode}-${item.code} : ${item.name}</option>`;
+        });
+
         clsEl.innerHTML = `
           <div class="editor-row class-row">
             <input type="color" class="color-picker" value="${cls.borderColor}" data-cidx="${cIdx}">
             <div class="editor-inputs">
-              <input type="text" class="name-input" placeholder="クラス名 (例: 感知器)" value="${cls.name}" data-cidx="${cIdx}" data-field="name">
+              <input type="text" class="name-input" placeholder="クラス名 (例: LED埋込天井灯)" value="${cls.name}" data-cidx="${cIdx}" data-field="name">
               <input type="text" class="desc-input" placeholder="仕様・備考" value="${cls.description}" data-cidx="${cIdx}" data-field="description">
+              <div class="planest-field">
+                <select class="planest-cat-select" data-cidx="${cIdx}">
+                  ${catOptions}
+                </select>
+                <select class="planest-item-select" data-cidx="${cIdx}">
+                  ${itemOptions}
+                </select>
+              </div>
             </div>
             <div class="legend-thumb catalog-editor-thumb ${cls.legendImage ? "has-legend" : ""}">
               ${cls.legendImage ? `<img src="${cls.legendImage}" alt="legend"><button class="legend-delete-btn" data-cidx="${cIdx}" data-type="legend" type="button" title="凡例を削除">×</button>` : `<span class="legend-placeholder" title="図面からの切り抜きはサイドバーで行ってください">▧</span>`}
@@ -199,8 +235,29 @@ window.SymbolAnnotator = window.SymbolAnnotator || {};
           const cIdx = e.target.dataset.cidx;
           const color = e.target.value;
           this.draftCatalog[cIdx].borderColor = color;
-          // color (fill) は少し透明度を持たせる (簡易実装)
-          // 実際にはhex to rgba が必要だがここでは簡易的に同じ色にするか固定
+        });
+      });
+
+      this.listEl.querySelectorAll(".planest-cat-select").forEach(select => {
+        select.addEventListener("change", (e) => {
+          const cIdx = e.target.dataset.cidx;
+          this.draftCatalog[cIdx].planestCategoryId = e.target.value;
+          // カテゴリが変わったらアイテムは一旦リセットする
+          this.draftCatalog[cIdx].planestItemId = "";
+          this.render();
+        });
+      });
+
+      this.listEl.querySelectorAll(".planest-item-select").forEach(select => {
+        select.addEventListener("change", (e) => {
+          const cIdx = e.target.dataset.cidx;
+          const selectedOption = e.target.options[e.target.selectedIndex];
+          this.draftCatalog[cIdx].planestItemId = e.target.value;
+          if (e.target.value && selectedOption.dataset.cat) {
+            // アイテムからカテゴリを逆引き設定
+            this.draftCatalog[cIdx].planestCategoryId = selectedOption.dataset.cat;
+          }
+          this.render();
         });
       });
 
