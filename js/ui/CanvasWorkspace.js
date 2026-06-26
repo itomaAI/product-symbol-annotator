@@ -731,11 +731,11 @@ window.SymbolAnnotator = window.SymbolAnnotator || {};
     }
 
     updateCursorForHover(point) {
-      const handle = this.findResizeHandle(point.x, point.y);
+      const handleInfo = this.findResizeHandle(point.x, point.y);
       const hitId = this.findHitAnnotation(point.x, point.y);
 
-      if (handle) {
-        this.viewport.style.cursor = (handle === "tl" || handle === "br") ? "nwse-resize" : "nesw-resize";
+      if (handleInfo) {
+        this.viewport.style.cursor = (handleInfo.handle === "tl" || handleInfo.handle === "br") ? "nwse-resize" : "nesw-resize";
       } else if (hitId) {
         this.viewport.style.cursor = "move";
       } else {
