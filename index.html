@@ -56,7 +56,8 @@
     <main class="main-grid">
       <aside class="sidebar">
         <section class="panel sidebar-header-panel">
-          <div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <button id="sidebar-close-btn" class="icon-btn" title="パネルを閉じる">❮</button>
             <h2>Classes</h2>
           </div>
           <button id="class-modal-open-btn" class="icon-btn" title="カタログを編集">⚙</button>
@@ -68,6 +69,7 @@
       </aside>
 
       <section class="workspace">
+        <button id="sidebar-open-btn" class="floating-toggle-btn" title="クラスパネルを開く">≡</button>
         <div id="empty-state" class="empty-state">
           <div class="empty-card">
             <div class="empty-icon">▧</div>

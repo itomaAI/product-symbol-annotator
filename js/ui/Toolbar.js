@@ -13,6 +13,8 @@ window.SymbolAnnotator = window.SymbolAnnotator || {};
       this.emptyPdfInput = document.getElementById("empty-pdf-input");
       this.projectInput = document.getElementById("project-input");
       this.scaleInput = document.getElementById("render-scale-input");
+      this.sidebarCloseBtn = document.getElementById("sidebar-close-btn");
+      this.sidebarOpenBtn = document.getElementById("sidebar-open-btn");
       this.pageInput = document.getElementById("page-input");
       this.pageTotal = document.getElementById("page-total");
       this.pagebar = document.getElementById("pagebar");
@@ -30,6 +32,18 @@ window.SymbolAnnotator = window.SymbolAnnotator || {};
 
       document.getElementById("save-project-btn").addEventListener("click", () => this.saveProject());
       document.getElementById("export-dataset-btn").addEventListener("click", () => this.exportDataset());
+
+      const toggleSidebar = () => {
+        document.body.classList.toggle("sidebar-closed");
+        setTimeout(() => {
+          if (this.store.getState().project.pageCount > 0) {
+            this.canvasWorkspace.renderCurrentPage({ fit: false });
+          }
+        }, 50);
+      };
+
+      if (this.sidebarCloseBtn) this.sidebarCloseBtn.addEventListener("click", toggleSidebar);
+      if (this.sidebarOpenBtn) this.sidebarOpenBtn.addEventListener("click", toggleSidebar);
 
       this.scaleInput.addEventListener("change", async () => {
         const next = Math.max(1, Math.min(10, parseFloat(this.scaleInput.value) || NS.Config.pdfRenderScale));

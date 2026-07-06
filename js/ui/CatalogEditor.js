@@ -29,7 +29,13 @@ window.SymbolAnnotator = window.SymbolAnnotator || {};
       // サイドバーの歯車ボタン（idはそのまま）から呼ばれる
       const openBtn = document.getElementById("class-modal-open-btn");
       if (openBtn) {
-        openBtn.addEventListener("click", () => this.open());
+        openBtn.addEventListener("click", () => {
+          if (!this.modalEl.classList.contains("hidden")) {
+            this.close();
+          } else {
+            this.open();
+          }
+        });
       }
     }
 
@@ -150,7 +156,7 @@ window.SymbolAnnotator = window.SymbolAnnotator || {};
         let catOptions = `<option value="">-- カテゴリ未選択 --</option>`;
         planestData.forEach(cat => {
           const selected = (cls.planestCategoryId === cat.category_code) ? "selected" : "";
-          catOptions += `<option value="${cat.category_code}" ${selected}>${cat.category_code} : ${cat.category_name}</option>`;
+          catOptions += `<option value="${cat.category_code}" ${selected}>${cat.category_name}</option>`;
         });
 
         // アイテムの選択肢生成
@@ -168,7 +174,7 @@ window.SymbolAnnotator = window.SymbolAnnotator || {};
         
         targetItems.forEach(item => {
           const isSelected = (cls.planestItemId === item.code && (cls.planestCategoryId === item.catCode || !cls.planestCategoryId));
-          itemOptions += `<option value="${item.code}" data-cat="${item.catCode}" ${isSelected ? "selected" : ""}>${item.catCode}-${item.code} : ${item.name}</option>`;
+          itemOptions += `<option value="${item.code}" data-cat="${item.catCode}" ${isSelected ? "selected" : ""}>${item.name}</option>`;
         });
 
         clsEl.innerHTML = `

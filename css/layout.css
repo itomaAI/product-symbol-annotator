@@ -326,3 +326,38 @@ input {
     display: none;
   }
 }
+body.sidebar-closed .main-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+body.sidebar-closed .sidebar {
+  display: none;
+}
+
+/* フローティングトグルボタン（閉じた時に表示） */
+.floating-toggle-btn {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--surface-1);
+  border: 1px solid var(--border-1);
+  color: var(--text-0);
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: none; /* 初期はサイドバーが開いているため非表示 */
+  place-items: center;
+  z-index: 50;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  transition: background 0.2s;
+}
+
+.floating-toggle-btn:hover {
+  background: var(--surface-2);
+}
+
+/* サイドバーが閉じている時に表示 */
+body.sidebar-closed .floating-toggle-btn {
+  display: grid;
+}
