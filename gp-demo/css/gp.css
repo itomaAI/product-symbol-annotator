@@ -1,0 +1,104 @@
+/* GP 提案パネル（サイドバーの 3 段目）と候補の ✓✗ ボタン */
+.sidebar {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.gp-panel {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--border-1);
+  background: rgba(13, 17, 25, 0.96);
+}
+
+.gp-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.gp-head h2 {
+  margin: 0;
+  font-size: 0.86rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.gp-status {
+  font-size: 0.72rem;
+  color: var(--text-2);
+  line-height: 1.4;
+}
+
+.gp-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.gp-row .btn {
+  flex: 1 1 auto;
+  white-space: nowrap;
+}
+
+.gp-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  font-size: 0.78rem;
+  color: var(--text-1);
+}
+
+.gp-row input[type="range"] {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.gp-summary {
+  font-size: 0.74rem;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+#gp-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.gp-cand {
+  position: absolute;
+  display: flex;
+  gap: 2px;
+  pointer-events: auto;
+  transform: translateY(-2px);
+}
+
+.gp-cand button {
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.5;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+
+.gp-cand .gp-ok {
+  background: #7af0b9;
+  color: #00170d;
+}
+
+.gp-cand .gp-ng {
+  background: #ff7676;
+  color: #2a0000;
+}
+
+.gp-cand button:hover {
+  filter: brightness(1.1);
+}

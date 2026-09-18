@@ -1,0 +1,26 @@
+{
+ "page": 18,
+ "scale": 5.0,
+ "width": 4210,
+ "height": 2975,
+ "stride": 8,
+ "featureWidth": 527,
+ "featureHeight": 372,
+ "channels": 128,
+ "cells": 79626,
+ "cellFraction": 0.4061639223847708,
+ "quant": "int8 per-cell scale",
+ "kernel": {
+  "type": "dkgp",
+  "lengthscale": 0.320029079914093,
+  "outA": 7.103280544281006,
+  "outB": -4.5388922691345215,
+  "sampleWin": 0,
+  "epoch": 5
+ },
+ "ckpt": "outputs/gp_kernel_detector_v1/best.pth",
+ "quantErrD2": {
+  "max": 9.887224587146193e-05,
+  "mean": 4.29110623372253e-05
+ }
+}

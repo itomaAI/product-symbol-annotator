@@ -1,0 +1,58 @@
+[
+ {
+  "page": 10,
+  "dir": "p10",
+  "cells": 102027,
+  "width": 5955,
+  "height": 4210
+ },
+ {
+  "page": 13,
+  "dir": "p13",
+  "cells": 103123,
+  "width": 5955,
+  "height": 4210
+ },
+ {
+  "page": 18,
+  "dir": "p18",
+  "cells": 79626,
+  "width": 4210,
+  "height": 2975
+ },
+ {
+  "page": 19,
+  "dir": "p19",
+  "cells": 93465,
+  "width": 5955,
+  "height": 4210
+ },
+ {
+  "page": 21,
+  "dir": "p21",
+  "cells": 155610,
+  "width": 5955,
+  "height": 4210
+ },
+ {
+  "page": 23,
+  "dir": "p23",
+  "cells": 103294,
+  "width": 5955,
+  "height": 4210
+ },
+ {
+  "page": 26,
+  "dir": "p26",
+  "cells": 99423,
+  "width": 5955,
+  "height": 4210
+ },
+ {
+  "page": 28,
+  "dir": "p28",
+  "cells": 92525,
+  "width": 5955,
+  "height": 4210
+ }
+]
